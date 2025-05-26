@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  dynamic-api:
+    build: ./Esg_api_dynamic_1
+    container_name: esg_api_dynamic
+    ports:
+      - "5000:5000"
+
+  jwt-api:
+    build: ./esg_api_jwt
+    container_name: esg_api_jwt
+    ports:
+      - "5001:5001"
