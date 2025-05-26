@@ -1,7 +1,8 @@
-- name: SSH & Deploy to EC2 with Docker Compose
+- name: SSH & Deploy to EC2
   run: |
     ssh -o StrictHostKeyChecking=no ubuntu@ec2-65-2-6-210.ap-south-1.compute.amazonaws.com << 'EOF'
       cd ~
+
       if [ -d "ec2_esg_api_esg_jwt" ]; then
         cd ec2_esg_api_esg_jwt
         git pull origin master
@@ -10,9 +11,7 @@
         cd ec2_esg_api_esg_jwt
       fi
 
-      cd ec2_esg_api_esg_jwt  # ⬅️ This is the nested folder inside the repo
-
-      echo "✅ Now in: \$(pwd)"
+      echo "✅ Current directory: \$(pwd)"
       ls -la docker-compose.yml
 
       docker-compose down || true
