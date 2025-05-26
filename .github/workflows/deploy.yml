@@ -1,35 +1,13 @@
-name: Deploy to EC2
-
-on:
-  push:
-    branches:
-      - master
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Add SSH Key
-        uses: webfactory/ssh-agent@v0.5.4
-        with:
-          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
-
       - name: SSH & Deploy to EC2 with Docker Compose
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@ec2-65-2-6-210.ap-south-1.compute.amazonaws.com << 'EOF'
-            sudo apt update -y
-            sudo apt install docker-compose -y
             cd ~
-            if [ -d "ec2_esg_api_esg_jwt" ]; then
-              cd ec2_esg_api_esg_jwt
+            if [ -d "Esg_Api" ]; then
+              cd Esg_Api
               git pull origin master
             else
-              git clone https://github.com/varunkareti22/Esg_Api.git ec2_esg_api_esg_jwt
-              cd ec2_esg_api_esg_jwt
+              git clone https://github.com/varunkareti22/Esg_Api.git
+              cd Esg_Api
             fi
             docker-compose down || true
             docker-compose up --build -d
