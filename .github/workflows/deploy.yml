@@ -1,19 +1,39 @@
-- name: SSH & Deploy to EC2
-  run: |
-    ssh -o StrictHostKeyChecking=no ubuntu@ec2-65-2-6-210.ap-south-1.compute.amazonaws.com << 'EOF'
-      cd ~
+name: Deploy to EC2
 
-      if [ -d "ec2_esg_api_esg_jwt" ]; then
-        cd ec2_esg_api_esg_jwt
-        git pull origin master
-      else
-        git clone https://github.com/varunkareti22/Esg_Api.git ec2_esg_api_esg_jwt
-        cd ec2_esg_api_esg_jwt
-      fi
+on:
+  push:
+    branches:
+      - master
 
-      echo "✅ Current directory: \$(pwd)"
-      ls -la docker-compose.yml
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-      docker-compose down || true
-      docker-compose up --build -d
-    EOF
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Add SSH Key
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: SSH & Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@ec2-65-2-6-210.ap-south-1.compute.amazonaws.com << 'EOF'
+            cd ~
+
+            if [ -d "ec2_esg_api_esg_jwt" ]; then
+              cd ec2_esg_api_esg_jwt
+              git pull origin master
+            else
+              git clone https://github.com/varunkareti22/Esg_Api.git ec2_esg_api_esg_jwt
+              cd ec2_esg_api_esg_jwt
+            fi
+
+            echo "✅ Current directory: \$(pwd)"
+            ls -la docker-compose.yml
+
+            docker-compose down || true
+            docker-compose up --build -d
+          EOF
