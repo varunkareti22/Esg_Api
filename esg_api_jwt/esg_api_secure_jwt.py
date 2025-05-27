@@ -10,25 +10,13 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 import traceback
 
-from flask_cors import cross_origin
-
 app = Flask(__name__)
-
-@app.route('/api/limited_access')
-@cross_origin(
-    origins=["http://localhost:5173"],
-    methods=["GET", "POST"],
-    allow_headers=["Content-Type"]
-)
-def get_limited_access_data():
-    return jsonify({"data": "This data has limited access."})
-
 
 # JWT Setup
 JWT_SECRET = "secret981"
 JWT_ALGORITHM = "HS256"
 
-# Static AES key provided by team (26 chars, will be SHA-256 hashed)
+# Static AES key provided by team
 STATIC_AES_KEY = "your-32-byte-secret-key"
 
 # JWT Decorator
@@ -143,25 +131,18 @@ def get_brsr_esg_data():
     start_year = request.args.get("start_year")
     org_id = request.args.get("org_id").strip()
 
-    if not all([company_name, org_id]):
+    if not all([company_name, start_year, org_id]):
         return Response(json.dumps({"error": "Missing query parameters"}), status=400, mimetype="application/json")
 
     try:
         conn = get_db_connection(org_id)
         cur = conn.cursor()
 
-        query = """
+        cur.execute("""
             SELECT brsr_esg_data, id, startyear, endyear, filename
             FROM brsr_esg_score
-            WHERE filename ILIKE %s
-        """
-        params = [f"%{company_name}%"]
-
-        if start_year:
-            query += " AND startyear = %s"
-            params.append(int(start_year))
-
-        cur.execute(query, tuple(params))
+            WHERE filename ILIKE %s AND startyear = %s
+        """, (f"%{company_name}%", int(start_year)))
         rows = cur.fetchall()
         cur.close()
         conn.close()
@@ -192,5 +173,4 @@ def ping():
     return jsonify({"message": "pong"})
 
 if __name__ == "__main__":
-    
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0', port=5000)
